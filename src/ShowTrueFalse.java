@@ -11,11 +11,11 @@ public class ShowTrueFalse {
     public static void main(String args[]) {
         XYSeriesCollection dataSet = new XYSeriesCollection();
         XYSeries fptp = new XYSeries("False and Ture Positive");
-        Event test1 = new Event(-1, 1, 2, 2, true);
+        //Event test1 = new Event(-1, 1, 2, 2, true);
         for(double i = -100; i < 100; i=i+0.1) {
-            double x = 1-test1.getDangerousProbability(i);
-            double y = 1-test1.getSafeProbability(i);
-            fptp.add(x, y);
+            //double x = 1-test1.getDangerousProbability(i);
+           // double y = 1-test1.getSafeProbability(i);
+           // fptp.add(x, y);
         }
         dataSet.addSeries(fptp);
         JFreeChart chart = ChartFactory.createScatterPlot("False and True Positive", "False",

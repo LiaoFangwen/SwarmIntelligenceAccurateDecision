@@ -1,3 +1,4 @@
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import java.util.Random;
@@ -9,48 +10,42 @@ public class Agent {
     private boolean secondDecision;
     private double escapeThreshold = 0;
     private double quorumThreshold = 0;
-    private double oldQuorum = 0;
-    private double intensitySignal = 0;
-    //public int life;
-    //public Agent() {}
-    //public Agent(double pT, double pF) {};
-    //public Agent(double pT, double pF, double maxInterval) {}
-    public Agent(double fp, double tp) {
-        this.pFalseP = fp;
-        this.pTrueP = tp;
-    }
-    public Agent(double escapeThreshold, double fp, double tp) {
-        this.escapeThreshold = escapeThreshold;
-        this.pFalseP = fp;
-        this.pTrueP = tp;
-        //this.quorumThreshold = quorumThreshold;
-        //this.oldQuorum = quorumThreshold;
+    private double initialQuorum = 0;
+
+    /**
+     * set pTp and pFp for agents
+     * @param bounds bounds in which can choose threshold
+     * @param distributions distributions from event groups for calculating probabilities
+     */
+    public void setTrueFalsePositiveProbabilities(double[] bounds, NormalDistribution[] distributions, Random random) {
+        double threshold = bounds[0] + random.nextDouble()*(bounds[1] - bounds[0]);
+        escapeThreshold = threshold;
+        pTrueP = 1 - distributions[1].cumulativeProbability(threshold);
+        pFalseP = 1 - distributions[0].cumulativeProbability(threshold);
+
+        //System.out.println(bounds[0]);
+        //System.out.println(bounds[1]);
+        //System.out.println(threshold);
+        //System.out.println(pTrueP);
+       //System.out.println(pFalseP);
+
     }
 
-    public void newEventIn(Event event) {
-        intensitySignal = event.getIntensitySignal();
-    }
-    public void generateQuorum(Random rand) {
-        /*
-        double low = 100*pFalseP;
-        int lowerBound = (int)low;
-        double high = 100*pTrueP;
-        int higherBound = (int)high;
-        quorumThreshold = lowerBound + rand.nextInt(higherBound-lowerBound);
-        oldQuorum = quorumThreshold;
-        */
+    public void generateInitialQuorum(Random rand) {
         quorumThreshold = pFalseP + (pTrueP - pFalseP) * rand.nextDouble();
-        //System.out.println(quorumThreshold);
+        initialQuorum = quorumThreshold;
+        System.out.println(quorumThreshold);
 
     }
     public void setQuorumThreshold(int q) {
         Random rand = new Random();
         quorumThreshold = q + rand.nextInt(20);
     }
+    /*
     public void makeFirstDecision(boolean state) {
         UniformRealDistribution distribution = new UniformRealDistribution(0,1);
         double sample = distribution.sample();
-        //System.out.println(sample);
+        System.out.println(sample);
         if(state == true) {
             if(sample<pTrueP)
                 firstDecision = true;
@@ -62,13 +57,15 @@ public class Agent {
             else
                 firstDecision = false;
         }
-        //System.out.println(firstDecision);
+        System.out.println(firstDecision);
     }
-    public void makeFirstDecision() {
+    */
+    public void makeFirstDecision(double intensitySignal) {
         if(intensitySignal >= escapeThreshold)
             firstDecision = true;
         else
             firstDecision = false;
+        //System.out.println(firstDecision);
     }
     public int submitFirstDecision() {
         int value = 0;
@@ -86,16 +83,16 @@ public class Agent {
     }
     public void learn(boolean realState) {
         if(secondDecision == true && realState == false)
-            quorumThreshold = quorumThreshold + 0.01;
+            quorumThreshold = quorumThreshold + 0.001;
         else if(secondDecision == false && realState == true)
-            quorumThreshold = quorumThreshold - 0.01;
+            quorumThreshold = quorumThreshold - 0.001;
     }
 
 
 
 
     public double getOldQuorum() {
-        return oldQuorum;
+        return initialQuorum;
     }
 
     public boolean getFirstDecision() {
@@ -104,9 +101,6 @@ public class Agent {
 
     public boolean getSecondDecision() {
         return secondDecision;
-    }
-    public double getIntensitySignal() {
-        return intensitySignal;
     }
     public double getQuorumThreshold() {
         return quorumThreshold;
